@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql-deploy
+  namespace: mysql
+spec:
+  selector:
+    matchLabels:
+      app: db
+  template:
+    metadata:
+      labels:
+        app: db
+    spec:
+      containers:
+      - name: db-cont
+        image: mysql
+        env:
+          - name: MYSQL_ROOT_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: db-secret
+                key: MYSQL_ROOT_PASSWORD
+          - name: MYSQL_USER
+            valueFrom:
+              secretKeyRef:
+                name: db-secret
+                key: DB_USER
+          - name: MYSQL_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: db-secret
+                key: DB_PASSWORD
+          - name: MYSQL_DATABASE
+            valueFrom:
+              secretKeyRef:
+                name: db-secret
+                key: DB_DATABASE
+        ports:
+        - containerPort: 3306
+        resources:
+          requests:
+            cpu: "1000m"
+            memory: "1Gi"
+          limits:
+            cpu: "1000m"
+            memory: "1Gi"
+        volumeMounts:
+        - name: db-pv
+          mountPath: /var/lib/mysql
+      volumes:
+      - name: db-pv
+        persistentVolumeClaim:
+          claimName: db-pvc
+  replicas: 1
+---
+apiVersion: v1 
+kind: Service
+metadata:
+  name: db-svc
+  namespace: mysql
+spec:
+  selector:
+    app: db
+  ports:
+    - name: db-port
+      port: 3306
+  type: ClusterIP
