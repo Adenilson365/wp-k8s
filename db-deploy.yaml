@@ -1,9 +1,10 @@
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
-  name: mysql-deploy
+  name: mysql
   namespace: mysql
 spec:
+  serviceName: db
   selector:
     matchLabels:
       app: db
@@ -65,4 +66,4 @@ spec:
   ports:
     - name: db-port
       port: 3306
-  type: ClusterIP
+  clusterIP: None
